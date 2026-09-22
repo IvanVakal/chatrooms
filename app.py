@@ -2,7 +2,9 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load .env file into environment variables (local dev only)
 
+import json
 import os
+import urllib.request
 import uuid
 from datetime import datetime
 from functools import wraps
@@ -77,16 +79,31 @@ def login_required(f):
     return decorated_function
 
 
+def _graph_display_name(access_token):
+    """Look up the user's display name from Microsoft Graph (/me), using User.Read."""
+    req = urllib.request.Request(
+        "https://graph.microsoft.com/v1.0/me",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            return json.load(resp).get("displayName")
+    except Exception:
+        return None
+
+
 def current_user_name():
-    """Display name of the signed-in user, from the ID token claims."""
+    """Display name of the signed-in user: name claim, then email, then 'Unknown'."""
     user = session["user"]
-    name = user.get("name") or user.get("preferred_username", "Unknown")
+    name = user.get("name") or user.get("preferred_username") or user.get("email") or "Unknown"
     return name[:64]  # created_by / author columns are String(64)
 
 
 @app.context_processor
 def inject_user():
-    return {"user": session.get("user")}
+    if "user" not in session:
+        return {"user": None, "user_name": None}
+    return {"user": session["user"], "user_name": current_user_name()}
 
 
 # ── Authentication routes ────────────────────────────────────
@@ -130,7 +147,11 @@ def callback():
 
     # Store the token claims in the session (contains name, email, etc.)
     session.pop("state", None)
-    session["user"] = result.get("id_token_claims")
+    claims = result.get("id_token_claims") or {}
+    # Some accounts have no "name" claim in the ID token; ask Graph for the display name
+    if not claims.get("name") and result.get("access_token"):
+        claims["name"] = _graph_display_name(result["access_token"])
+    session["user"] = claims
 
     # Redirect to where the user was trying to go, or the home page
     next_page = session.pop("next", None)

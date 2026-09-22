@@ -113,9 +113,9 @@
 <body>
     <nav style="background:#0A2342; color:white; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-radius:4px;">
         <a href="{{ url_for('index') }}" style="color:white; font-weight:bold; font-size:1.1em;">💬 ChatRooms</a>
-        {% if user %}
+        {% if user_name %}
         <span>
-            Signed in as <strong>{{ user['name'] }}</strong>
+            Signed in as <strong>{{ user_name }}</strong>
             &nbsp;|&nbsp;
             <a href="{{ url_for('logout') }}" style="color:#FFC107;">Sign out</a>
         </span>
