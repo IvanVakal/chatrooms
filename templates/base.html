@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}Anonymous Chat{% endblock %}</title>
+    <title>{% block title %}ChatRooms{% endblock %}</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -24,7 +24,7 @@
             font-size: 22px;
             margin: 0;
         }
-        header .nickname {
+        header .user {
             font-size: 14px;
             color: #555;
         }
@@ -111,10 +111,18 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1><a href="{{ url_for('index') }}">Anonymous Chat</a></h1>
-        <div class="nickname">You are: <strong>{{ nickname }}</strong></div>
-    </header>
+    <nav style="background:#0A2342; color:white; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-radius:4px;">
+        <a href="{{ url_for('index') }}" style="color:white; font-weight:bold; font-size:1.1em;">💬 ChatRooms</a>
+        {% if user %}
+        <span>
+            Signed in as <strong>{{ user['name'] }}</strong>
+            &nbsp;|&nbsp;
+            <a href="{{ url_for('logout') }}" style="color:#FFC107;">Sign out</a>
+        </span>
+        {% else %}
+        <a href="{{ url_for('login') }}" style="color:#FFC107;">Sign in with Microsoft</a>
+        {% endif %}
+    </nav>
     {% block content %}{% endblock %}
     <footer>Deployed on Microsoft Azure &middot; CPTR 445 Cloud Design and Computing</footer>
 </body>

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - ChatRooms{% endblock %}
+{% block content %}
+    <h2>{{ title }}</h2>
+    <p>{{ message }}</p>
+    <p><a href="{{ url_for('login') }}">Try signing in again</a></p>
+{% endblock %}

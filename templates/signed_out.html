@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Signed out - ChatRooms{% endblock %}
+{% block content %}
+    <h2>You have signed out</h2>
+    <p>You have been signed out of ChatRooms and your Microsoft session.</p>
+    <p><a href="{{ url_for('login') }}">Sign in with Microsoft</a> to rejoin the conversation.</p>
+{% endblock %}
