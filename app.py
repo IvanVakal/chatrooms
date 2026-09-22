@@ -87,7 +87,7 @@ def _graph_display_name(access_token):
     )
     try:
         with urllib.request.urlopen(req, timeout=5) as resp:
-            return json.load(resp).get("displayName")
+            return (json.load(resp).get("displayName") or "").strip() or None
     except Exception:
         return None
 
@@ -95,8 +95,11 @@ def _graph_display_name(access_token):
 def current_user_name():
     """Display name of the signed-in user: name claim, then email, then 'Unknown'."""
     user = session["user"]
-    name = user.get("name") or user.get("preferred_username") or user.get("email") or "Unknown"
-    return name[:64]  # created_by / author columns are String(64)
+    for key in ("name", "preferred_username", "email"):
+        value = (user.get(key) or "").strip()
+        if value:
+            return value[:64]  # created_by / author columns are String(64)
+    return "Unknown"
 
 
 @app.context_processor
@@ -149,7 +152,7 @@ def callback():
     session.pop("state", None)
     claims = result.get("id_token_claims") or {}
     # Some accounts have no "name" claim in the ID token; ask Graph for the display name
-    if not claims.get("name") and result.get("access_token"):
+    if not (claims.get("name") or "").strip() and result.get("access_token"):
         claims["name"] = _graph_display_name(result["access_token"])
     session["user"] = claims
 
